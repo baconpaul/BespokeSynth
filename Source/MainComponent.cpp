@@ -5,7 +5,8 @@
 #include <GL/glew.h>
 #endif
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include <JuceHeader.h>
+using namespace juce::gl;
 #include "nanovg/nanovg.h"
 #define NANOVG_GLES2_IMPLEMENTATION
 #include "nanovg/nanovg_gl.h"

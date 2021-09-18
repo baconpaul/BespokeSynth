@@ -30,6 +30,9 @@
 #include <Windows.h>
 #endif
 
+#include <JuceHeader.h>
+using namespace juce::gl;
+
 //#include <chrono>
 #include <time.h>
 

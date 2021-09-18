@@ -26,7 +26,8 @@
 */
 
 #ifdef BESPOKE_WINDOWS
-#include <GL/glew.h>
+// juce::gl supercedes this
+// #include <GL/glew.h>
 #endif
 
 #include <JuceHeader.h>

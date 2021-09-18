@@ -8,10 +8,6 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 endif()
 
-if(NOT BUILD_TESTING)
-  option(BUILD_TESTING "" OFF)
-endif()
-
 project(BespokeSynth VERSION 0.9.0 LANGUAGES C CXX ASM)
 
 if(NOT JUCE_LOCATION)
@@ -19,6 +15,9 @@ if(NOT JUCE_LOCATION)
 endif()
 
 add_subdirectory(${JUCE_LOCATION} ${CMAKE_BINARY_DIR}/JUCE EXCLUDE_FROM_ALL)
+
+set( PYBIND11_FINDPYTHON ON )
+add_subdirectory(libs/pybind11 CONFIG)
 
 set(SOURCE_LIST
         Source/exprtk/exprtk.hpp
@@ -181,30 +180,6 @@ set(SOURCE_LIST
         Source/push2/push2/Push2-UsbCommunicator.h
         Source/push2/Result.cpp
         Source/push2/Result.h
-        Source/pybind11/detail/class.h
-        Source/pybind11/detail/common.h
-        Source/pybind11/detail/descr.h
-        Source/pybind11/detail/init.h
-        Source/pybind11/detail/internals.h
-        Source/pybind11/detail/typeid.h
-        Source/pybind11/attr.h
-        Source/pybind11/buffer_info.h
-        Source/pybind11/cast.h
-        Source/pybind11/chrono.h
-        Source/pybind11/common.h
-        Source/pybind11/complex.h
-        Source/pybind11/eigen.h
-        Source/pybind11/embed.h
-        Source/pybind11/eval.h
-        Source/pybind11/functional.h
-        Source/pybind11/iostream.h
-        Source/pybind11/numpy.h
-        Source/pybind11/operators.h
-        Source/pybind11/options.h
-        Source/pybind11/pybind11.h
-        Source/pybind11/pytypes.h
-        Source/pybind11/stl.h
-        Source/pybind11/stl_bind.h
         Source/vinylcontrol/timecoder.c
         Source/vinylcontrol/timecoder.h
         Source/vinylcontrol/vinylcontrol.cpp
@@ -895,29 +870,25 @@ target_compile_definitions(BespokeSynth PRIVATE
 )
 target_sources(BespokeSynth PRIVATE
         Source/CFMessaging/Bespoke_CFMessaging.cpp
-        Source/CFMessaging/KontrolKommunicator.cpp
+        #Source/CFMessaging/KontrolKommunicator.cpp
         Source/CFMessaging/KontrolKommunicator.h
-        Source/CFMessaging/ListenPort.cpp
+        #Source/CFMessaging/ListenPort.cpp
         Source/CFMessaging/ListenPort.h
-        Source/CFMessaging/NIMessage.cpp
+        #Source/CFMessaging/NIMessage.cpp
         Source/CFMessaging/NIMessage.h
-        Source/CFMessaging/SendPort.cpp
+        #Source/CFMessaging/SendPort.cpp
         Source/CFMessaging/SendPort.h
         Source/psmove/hid.c
         Source/psmove/hidapi.h
-        Source/psmove/Bespoke_PSMove.c
+        #Source/psmove/Bespoke_PSMove.c
         Source/psmove/psmove.c
         Source/psmove/psmove.h
-        Source/psmove/PSMoveMgr.cpp
-        Source/psmove/PSMoveMgr.h
-        Source/KompleteKontrol.cpp
-        Source/KompleteKontrol.h
-        Source/PSMoveController.cpp
-        Source/PSMoveController.h
-)
-# THIS IS A HACK and should use pybind cmakelists
-target_link_libraries(BespokeSynth PRIVATE
-	"-framework /usr/local/Cellar/python\@3.9/3.9.6/Frameworks/Python.framework"
+        #Source/psmove/PSMoveMgr.cpp
+        #Source/psmove/PSMoveMgr.h
+        #Source/KompleteKontrol.cpp
+        #Source/KompleteKontrol.h
+        #Source/PSMoveController.cpp
+        #Source/PSMoveController.h
 )
 elseif(WIN32)
 target_compile_definitions(BespokeSynth PRIVATE
@@ -929,16 +900,12 @@ target_compile_definitions(BespokeSynth PRIVATE
      GLEW_STATIC=0
      GL_GLEXT_PROTOTYPES=0
 )
-
-# THIS IS A HACK and the right thing is to use the pybind cmakelists
-target_include_directories(BespokeSynth PUBLIC
-    /usr/include/python3.8
-)
-target_link_libraries(BespokeSynth PUBLIC /usr/lib/x86_64-linux-gnu/libpython3.8.so /usr/lib/x86_64-linux-gnu/libusb-1.0.so.0 )
+target_link_libraries(BespokeSynth PRIVATE /usr/lib/x86_64-linux-gnu/libusb-1.0.so.0)
 
 endif()
 
 target_link_libraries(BespokeSynth PRIVATE
+        pybind11::embed
         juce::juce_audio_basics
         juce::juce_audio_devices
         juce::juce_audio_formats

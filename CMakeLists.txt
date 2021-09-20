@@ -446,18 +446,6 @@ if (APPLE)
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             COMMAND ${CMAKE_COMMAND} -E  copy_directory resource ${OUTDIR}/BespokeSynth.app/Contents/Resources/resource)
 
-    add_custom_target(BespokeSynth-Installer)
-    add_dependencies(BespokeSynth-Installer BespokeSynth)
-    set(InstallerName BespokeSynth-${PROJECT_VERSION})
-    add_custom_command(TARGET BespokeSynth-Installer
-            POST_BUILD
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMAND ${CMAKE_COMMAND} -E make_directory installer/BespokeSynth
-            COMMAND ${CMAKE_COMMAND} -E copy_directory ${OUTDIR}/BespokeSynth.app installer/BespokeSynth/BespokeSynth.app
-            COMMAND hdiutil create /tmp/tmp.dmg -ov -volname "BespokeSynth" -fs HFS+ -srcfolder "installer/BespokeSynth"
-            COMMAND hdiutil convert /tmp/tmp.dmg -format UDZO -o installer/${InstallerName}.dmg
-            )
-
 elseif (WIN32)
     target_compile_definitions(BespokeSynth PRIVATE
             BESPOKE_WINDOWS=1
@@ -483,6 +471,13 @@ elseif (WIN32)
         target_link_libraries(BespokeSynth PRIVATE
                 ${CMAKE_SOURCE_DIR}/Source/3DxWare/Lib/x64/siapp.lib)
     endif ()
+
+    # Post install tasks - copy resources to the exe output directory
+    get_target_property(OUTDIR BespokeSynth RUNTIME_OUTPUT_DIRECTORY)
+    add_custom_command(TARGET BespokeSynth
+            POST_BUILD
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMAND ${CMAKE_COMMAND} -E  copy_directory resource ${OUTDIR})
 else ()
     target_compile_definitions(BespokeSynth PRIVATE
             BESPOKE_LINUX=1
@@ -505,6 +500,13 @@ else ()
     message(STATUS "Bespoke: Using USB from ${LIBUSB_1_LIBRARY}")
 
     target_link_libraries(BespokeSynth PRIVATE ${LIBUSB_1_LIBRARY})
+
+    # Ant put resources with the exe
+    get_target_property(OUTDIR BespokeSynth RUNTIME_OUTPUT_DIRECTORY)
+    add_custom_command(TARGET BespokeSynth
+            POST_BUILD
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMAND ${CMAKE_COMMAND} -E  copy_directory resource ${OUTDIR})
 
 endif ()
 

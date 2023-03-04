@@ -1,10 +1,12 @@
-project(fftw3bs VERSION 3.3.10 LANGUAGES C CXX)
+project(fftw3 VERSION 3.3.10 LANGUAGES C CXX)
 
-add_library(${PROJECT_NAME} fftw3)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "shared" FORCE)
+# ON would be nice but there's no SIMDE support so...
+# set(ENABLE_SSE2 OFF CACHE BOOL "sse" FORCE)
 add_subdirectory(fftw3)
 
-# This means external code says include fftw3/blah
-target_include_directories(${PROJECT_NAME} PUBLIC .)
-target_include_directories(${PROJECT_NAME} PRIVATE fftw3)
+add_library(besfft INTERFACE)
+target_link_libraries(besfft INTERFACE fftw3)
+target_include_directories(besfft INTERFACE fftw3/api)
 
-add_library(bespoke::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_library(bespoke::${PROJECT_NAME} ALIAS besfft)

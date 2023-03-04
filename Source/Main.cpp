@@ -12,6 +12,10 @@
 #include <memory>
 #include "VSTScanner.h"
 
+// JUST A HACKY TEST
+#include <fftw3.h>
+// END HACKY TEST
+
 #include "VersionInfo.h"
 
 using namespace juce;
@@ -39,6 +43,10 @@ public:
    //==============================================================================
    void initialise(const String& commandLine) override
    {
+      // JUST A HACKY TEST
+      auto* a = fftw_malloc(256);
+      fftw_free(a);
+      // END HACKY TEST
       auto scannerSubprocess = std::make_unique<PluginScannerSubprocess>();
 
       if (scannerSubprocess->initialiseFromCommandLine(commandLine, kScanProcessUID))

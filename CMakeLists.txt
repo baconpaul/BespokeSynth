@@ -97,8 +97,8 @@ else()
 endif()
 
 if (BESPOKE_VST2_SDK_LOCATION)
+    message(STATUS "Enabling VST2 ${BESPOKE_VST2_SDK_LOCATION} - caution, non FOSS build")
     juce_set_vst2_sdk_path(${BESPOKE_VST2_SDK_LOCATION})
-    message(STATUS "Enabling VST2 - caution, non FOSS build")
 endif()
 
 add_subdirectory(libs)

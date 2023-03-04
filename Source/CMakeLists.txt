@@ -829,7 +829,8 @@ target_link_libraries(BespokeSynth PRIVATE
     bespoke::push2
     bespoke::pybind11
     bespoke::xwax
-    bespoke::fftw3
+#    bespoke::fftw3
+    bespoke::r8brain
 
     $<$<STREQUAL:${BESPOKE_SYSTEM_TUNING_LIBRARY},OFF>:tuning-library>
     oddsound-mts

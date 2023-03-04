@@ -1,4 +1,5 @@
 add_subdirectory(exprtk EXCLUDE_FROM_ALL)
+add_subdirectory(fftw3 EXCLUDE_FROM_ALL)
 add_subdirectory(freeverb EXCLUDE_FROM_ALL)
 if(NOT BESPOKE_SYSTEM_JSONCPP)
   add_subdirectory(json EXCLUDE_FROM_ALL)

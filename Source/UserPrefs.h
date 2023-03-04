@@ -296,6 +296,8 @@ public:
    UserPrefDropdownInt samplerate{ "samplerate", 48000, 100, UserPrefCategory::General };
    UserPrefDropdownInt buffersize{ "buffersize", 256, 100, UserPrefCategory::General };
    UserPrefDropdownInt oversampling{ "oversampling", 1, 100, UserPrefCategory::General };
+   UserPrefDropdownInt saving_bitdepth{ "saving_bitdepth", 32, 100, UserPrefCategory::General };
+   UserPrefDropdownInt saving_samplerate{ "saving_samplerate", 0, 100, UserPrefCategory::General };
    UserPrefTextEntryInt width{ "width", 1700, 100, 10000, 5, UserPrefCategory::General };
    UserPrefTextEntryInt height{ "height", 1100, 100, 10000, 5, UserPrefCategory::General };
    UserPrefBool set_manual_window_position{ "set_manual_window_position", false, UserPrefCategory::General };

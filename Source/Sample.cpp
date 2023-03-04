@@ -30,6 +30,7 @@
 #include "ChannelBuffer.h"
 #include <memory>
 
+#include "UserPrefs.h"
 #include "juce_audio_formats/juce_audio_formats.h"
 
 Sample::Sample()
@@ -162,14 +163,19 @@ bool Sample::Write(const char* path /*=nullptr*/)
 //static
 bool Sample::WriteDataToFile(const std::string& path, float** data, int numSamples, int channels)
 {
-   auto wavFormat = std::make_unique<juce::WavAudioFormat>();
-   juce::File outputFile(ofToDataPath(path));
+   const auto wavFormat = std::make_unique<juce::WavAudioFormat>();
+   const juce::File outputFile(ofToDataPath(path));
    outputFile.create();
    auto outputTo = outputFile.createOutputStream();
    assert(outputTo != nullptr);
-   bool b1{ false };
-   auto writer = std::unique_ptr<juce::AudioFormatWriter>(
-   wavFormat->createWriterFor(outputTo.release(), gSampleRate, channels, 16, b1, 0));
+   constexpr bool b1{ false };
+   const int bitdepth = UserPrefs.saving_bitdepth.Get();
+   int samplerate = UserPrefs.saving_samplerate.Get();
+   if (samplerate == 0)
+      samplerate = GetClosestValidSampleRate(gSampleRate);
+   //TODO: Samplerate conversion so speed and such is correct.
+   const auto writer = std::unique_ptr<juce::AudioFormatWriter>(
+   wavFormat->createWriterFor(outputTo.release(), samplerate, channels, bitdepth, b1, 0));
    writer->writeFromFloatArrays(data, channels, numSamples);
 
    return true;
@@ -185,6 +191,19 @@ bool Sample::WriteDataToFile(const std::string& path, ChannelBuffer* data, int n
    bool ret = WriteDataToFile(path, channelData, numSamples, numChannels);
    delete[] channelData;
    return ret;
+}
+
+int Sample::GetClosestValidSampleRate(const int samplerate)
+{
+   const auto wavFormat = std::make_unique<juce::WavAudioFormat>();
+   int maxrate = 0;
+   for (const auto rate : wavFormat->getPossibleSampleRates())
+   {
+      if (rate >= samplerate)
+         return rate;
+      maxrate = rate;
+   }
+   return maxrate;
 }
 
 void Sample::Play(double startTime, float rate /*=1*/, int offset /*=0*/, int stopPoint /*=-1*/)

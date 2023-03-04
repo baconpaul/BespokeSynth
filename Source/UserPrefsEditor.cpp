@@ -30,9 +30,12 @@
 #include "SynthGlobals.h"
 #include "UserPrefs.h"
 #include "PatchCable.h"
+#include "Sample.h"
 
 #include "juce_audio_devices/juce_audio_devices.h"
 #include "juce_gui_basics/juce_gui_basics.h"
+#include "juce_audio_formats/juce_audio_formats.h"
+
 
 UserPrefsEditor::UserPrefsEditor()
 {
@@ -66,7 +69,22 @@ void UserPrefsEditor::CreateUIControls()
       if (UserPrefs.oversampling.Get() == oversample)
          UserPrefs.oversampling.GetIndex() = oversample;
    }
-
+   const auto wavFormat = std::make_unique<juce::WavAudioFormat>();
+   for (const auto depth : wavFormat->getPossibleBitDepths())
+   {
+      UserPrefs.saving_bitdepth.GetDropdown()->AddLabel(ofToString(depth), depth);
+      if (UserPrefs.saving_bitdepth.Get() == depth)
+         UserPrefs.saving_bitdepth.GetIndex() = depth;
+   }
+   UserPrefs.saving_samplerate.GetDropdown()->AddLabel("auto", 0);
+   for (const auto samplerate : wavFormat->getPossibleSampleRates())
+   {
+      UserPrefs.saving_samplerate.GetDropdown()->AddLabel(ofToString(samplerate), samplerate);
+      if (UserPrefs.saving_samplerate.Get() == samplerate)
+         UserPrefs.saving_samplerate.GetIndex() = samplerate;
+   }
+   if (UserPrefs.saving_samplerate.Get() == 0)
+      UserPrefs.saving_samplerate.GetIndex() = 0;
    UserPrefs.cable_drop_behavior.GetIndex() = 0;
    UserPrefs.cable_drop_behavior.GetDropdown()->AddLabel("show quickspawn", (int)CableDropBehavior::ShowQuickspawn);
    UserPrefs.cable_drop_behavior.GetDropdown()->AddLabel("do nothing", (int)CableDropBehavior::DoNothing);
@@ -298,6 +316,7 @@ void UserPrefsEditor::DrawModule()
       ofPopStyle();
    }
 
+   // General
    if (UserPrefs.samplerate.GetDropdown()->GetNumValues() == 0)
    {
       if (selectedDeviceType->hasSeparateInputsAndOutputs())
@@ -314,6 +333,23 @@ void UserPrefsEditor::DrawModule()
          DrawRightLabel(UserPrefs.buffersize.GetControl(), "couldn't find any buffer sizes for this device, for some reason (is it plugged in?)", ofColor::yellow);
    }
 
+   if (UserPrefs.oversampling.Get() != 1)
+   {
+      DrawRightLabel(UserPrefs.samplerate.GetControl(), "(internal samplerate: " + ofToString(gSampleRate) + ")", ofColor::grey);
+      DrawRightLabel(UserPrefs.buffersize.GetControl(), "(internal buffersize: " + ofToString(gBufferSize) + ")", ofColor::grey);
+   }
+
+   if (UserPrefs.saving_bitdepth.GetDropdown()->GetValue() < 32)
+      DrawRightLabel(UserPrefs.saving_bitdepth.GetControl(), "a bitdepth lower than 32 can result in audio clipping", ofColor::yellow);
+
+   if (UserPrefs.saving_samplerate.GetIndex() == 0)
+   {
+      std::string speedwarning;
+      if (Sample::GetClosestValidSampleRate(gSampleRate) != gSampleRate)
+         speedwarning = " (WARNING! recording speed will be " + ofToString(powf(static_cast<float>(gSampleRate) / Sample::GetClosestValidSampleRate(gSampleRate), 2), 2) + ")";
+      DrawRightLabel(UserPrefs.saving_samplerate.GetControl(), "(currently: " + ofToString(Sample::GetClosestValidSampleRate(gSampleRate)) + ")" + speedwarning, ofColor::white);
+   }
+
    DrawRightLabel(UserPrefs.width.GetControl(), "(currently: " + ofToString(ofGetWidth()) + ")", ofColor::white);
    DrawRightLabel(UserPrefs.height.GetControl(), "(currently: " + ofToString(ofGetHeight()) + ")", ofColor::white);
 
@@ -325,6 +361,10 @@ void UserPrefsEditor::DrawModule()
    }
 
    DrawRightLabel(UserPrefs.zoom.GetControl(), "(currently: " + ofToString(gDrawScale) + ")", ofColor::white);
+
+   DrawRightLabel(UserPrefs.record_buffer_length_minutes.GetControl(), "(memory usage: " + ofToString((UserPrefs.record_buffer_length_minutes.Get() * 60 * gSampleRate * 2 /* channels */ * 4 /* sizeof(float) */) / 1048576, 2) + " MiB)", ofColor::white);
+
+   // Paths
    DrawRightLabel(UserPrefs.recordings_path.GetControl(), "(default: " + UserPrefs.recordings_path.GetDefault() + ")", ofColor::white);
    DrawRightLabel(UserPrefs.tooltips.GetControl(), "(default: " + UserPrefs.tooltips.GetDefault() + ")", ofColor::white);
    DrawRightLabel(UserPrefs.layout.GetControl(), "(default: " + UserPrefs.layout.GetDefault() + ")", ofColor::white);
@@ -332,7 +372,7 @@ void UserPrefsEditor::DrawModule()
    DrawRightLabel(UserPrefs.ffmpeg_path.GetControl(), "(default: " + UserPrefs.ffmpeg_path.GetDefault() + ")", ofColor::white);
 
    if (hasPrefThatRequiresRestart)
-      DrawRightLabel(mCancelButton, "*requires restart before taking effect", ofColor::magenta, 4);
+      DrawRightLabel(mCancelButton, "* requires restart before taking effect", ofColor::magenta, 4);
 }
 
 void UserPrefsEditor::DrawRightLabel(IUIControl* control, std::string text, ofColor color, float offsetX)

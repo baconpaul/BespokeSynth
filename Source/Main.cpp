@@ -12,9 +12,9 @@
 #include <memory>
 #include "VSTScanner.h"
 
-// JUST A HACKY TEST
-#include <fftw3.h>
-// END HACKY TEST
+// HACK TEST R8
+#include "CDSPResampler.h"
+// END HACK
 
 #include "VersionInfo.h"
 
@@ -44,8 +44,7 @@ public:
    void initialise(const String& commandLine) override
    {
       // JUST A HACKY TEST
-      auto* a = fftw_malloc(256);
-      fftw_free(a);
+      r8b::CDSPResampler24 rs(48000, 96000, 64, 8.0);
       // END HACKY TEST
       auto scannerSubprocess = std::make_unique<PluginScannerSubprocess>();
 
